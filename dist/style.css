@@ -209,7 +209,7 @@ footer i { padding: 0 7px; color: var(--accent); font-style: normal; }
 /* Dialogs and counter tools share readable type and reachable controls. */
 dialog { width: min(720px, calc(100% - 28px)); max-height: 90dvh; padding: 32px; border: 1px solid var(--line); border-radius: 15px; background: var(--paper); color: var(--ink); box-shadow: 0 24px 90px #06172966; overscroll-behavior: contain; overflow-wrap: anywhere; }
 dialog::backdrop { background: #071a30aa; }
-.close { position: sticky; top: 0; margin: -22px -22px -22px auto; z-index: 2; border-color: var(--line); background: var(--paper); font-size: 27px; }
+.close { position: sticky; top: 0; display: flex; width: 44px; height: 44px; padding: 0; margin: -22px -22px -22px auto; z-index: 2; border-color: var(--line); background: var(--paper); font-size: 27px; }
 dialog h2 { margin: 19px 32px 12px 0; font-size: 30px; line-height: 1.15; letter-spacing: -.04em; }
 dialog h3 { margin: 25px 0 12px; font-size: 17px; }
 dialog p { color: var(--muted); font-size: 14px; line-height: 1.75; }

@@ -226,6 +226,10 @@ test('neutral identity, offline cache scope and visible dialog dismissal are con
   assert.match(read('sw.js'), /caches\.open\(CACHE\)\.then\(cache=>cache\.match\(event\.request\)\)/);
   assert.match(read('sw.js'), /assets\/wordmark\.svg/);
   assert.match(css, /\.close \{ position: sticky; top: 0;/);
+  const closeRule = css.slice(css.indexOf('.close {')).split('}')[0];
+  assert.match(closeRule, /display: flex;/, 'sticky close needs block-level flex for auto left margin');
+  assert.match(closeRule, /width: 44px; height: 44px;/);
+  assert.match(closeRule, /margin: -22px -22px -22px auto;/);
   assert.match(app, /const prefix='partsdesk-v1-'/);
   assert.match(app, /migrateLegacyWorkspace\(localStorage,prefix\)/);
 });
