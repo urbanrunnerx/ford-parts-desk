@@ -4,8 +4,15 @@ node_modules/
 local.properties
 *.jks
 *.keystore
+*.p12
+*.pfx
+*.pk8
+*.jks.b64
+*.keystore.b64
+keystore.properties
+release-input/
+release-output/
 *.apk
 .DS_Store
 __pycache__/
 work/
-
