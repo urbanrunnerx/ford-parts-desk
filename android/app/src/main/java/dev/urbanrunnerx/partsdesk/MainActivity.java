@@ -39,16 +39,16 @@ public class MainActivity extends Activity {
  private WebView printWeb;
  private ValueCallback<Uri[]> fileCallback;
  private String exportText;
- private String epcRequestId,epcVin;
+ private String epcRequestId,epcVin,vinResolveId,vinResolveSuffix;
  private String[] epcBases;
  private final ExecutorService decoderExecutor=Executors.newSingleThreadExecutor();
- private static final int PICK_FILE=41, SAVE_FILE=42, EPC_LOOKUP=43;
+ private static final int PICK_FILE=41, SAVE_FILE=42, EPC_LOOKUP=43, VIN_RESOLVE=44;
  public WebView getWebView(){return web;}
 
  @SuppressLint({"SetJavaScriptEnabled"})
  @Override public void onCreate(Bundle state){
   super.onCreate(state);
-  if(state!=null){epcRequestId=state.getString("epc-request-id");epcVin=state.getString("epc-vin");epcBases=state.getStringArray("epc-bases");}
+  if(state!=null){epcRequestId=state.getString("epc-request-id");epcVin=state.getString("epc-vin");epcBases=state.getStringArray("epc-bases");vinResolveId=state.getString("vin-resolve-id");vinResolveSuffix=state.getString("vin-resolve-suffix");}
   web=new WebView(this);
   web.setBackgroundColor(0xfff6f8fb);
   // WebView padding does not inset its HTML viewport. Size it inside a native frame
@@ -109,12 +109,29 @@ public class MainActivity extends Activity {
     String partName=p.optString("partName","Service part lookup");if(partName.length()>160)partName=partName.substring(0,160);final String title=partName;
     runOnUiThread(()->{
      if(isFinishing()||isDestroyed())return;
-     if(epcRequestId!=null){toast("Finish the open catalog lookup first.");notifyEpcClosed(id);return;}
+     if(epcRequestId!=null||vinResolveId!=null){toast("Finish the open catalog lookup first.");notifyEpcClosed(id);return;}
      epcRequestId=id;epcVin=vin;epcBases=bases;
      try{startActivityForResult(new Intent(MainActivity.this,EpcActivity.class).putExtra("vin",vin).putExtra("requestId",id).putExtra("bases",bases).putExtra("partName",title),EPC_LOOKUP);}
      catch(Exception error){epcRequestId=null;epcVin=null;epcBases=null;toast("Unable to open the EPC lookup.");notifyEpcClosed(id);}
     });
    }catch(Exception e){rejectEpcLaunch(rejectedId);}
+  }
+  @JavascriptInterface public void resolveVin(String suffix,String requestId){
+   if(requestId==null||!requestId.matches("[A-Za-z0-9|_-]{1,180}"))return;
+   if(suffix==null||!suffix.matches("[A-HJ-NPR-Z0-9]{8}")){notifyVinResolved(requestId,suffix,null,"Enter the last 8 VIN characters.");return;}
+   runOnUiThread(()->{
+    if(isFinishing()||isDestroyed())return;
+    if(epcRequestId!=null||vinResolveId!=null){notifyVinResolved(requestId,suffix,null,"Finish the open catalog lookup first.");return;}
+    vinResolveId=requestId;vinResolveSuffix=suffix;
+    try{startActivityForResult(new Intent(MainActivity.this,VinResolveActivity.class).putExtra("suffix",suffix).putExtra("requestId",requestId),VIN_RESOLVE);}
+    catch(Exception error){vinResolveId=null;vinResolveSuffix=null;notifyVinResolved(requestId,suffix,null,"Unable to open the vehicle lookup. Try again or enter the full VIN.");}
+   });
+  }
+  @JavascriptInterface public String getVinResolution(){return getSharedPreferences("vin-results",MODE_PRIVATE).getString("pending","");}
+  @JavascriptInterface public void acknowledgeVinResolution(String requestId){
+   if(requestId==null)return;
+   android.content.SharedPreferences saved=getSharedPreferences("vin-results",MODE_PRIVATE);
+   try{if(requestId.equals(new JSONObject(saved.getString("pending","")).optString("requestId")))saved.edit().remove("pending").apply();}catch(Exception ignored){}
   }
   @JavascriptInterface public String getEpcResult(){return getSharedPreferences("epc-results",MODE_PRIVATE).getString("pending","");}
   @JavascriptInterface public void acknowledgeEpcResult(){getSharedPreferences("epc-results",MODE_PRIVATE).edit().remove("pending").apply();}
@@ -145,6 +162,11 @@ public class MainActivity extends Activity {
  }
  @Override protected void onActivityResult(int request,int result,Intent data){
   super.onActivityResult(request,result,data);
+  if(request==VIN_RESOLVE){
+   String expectedId=vinResolveId,expectedSuffix=vinResolveSuffix;vinResolveId=null;vinResolveSuffix=null;
+   String resolved=result==RESULT_OK&&data!=null?data.getStringExtra("resolvedVehicle"):null;
+   notifyVinResolved(expectedId,expectedSuffix,resolved,resolved==null?"Vehicle lookup cancelled. Choose a saved vehicle or enter the full VIN.":"The returned vehicle did not match this VIN request. Try again.");
+  }
   if(request==EPC_LOOKUP){
    String expectedId=epcRequestId,expectedVin=epcVin;String[] expectedBases=epcBases;epcRequestId=null;epcVin=null;epcBases=null;
    if(result==RESULT_OK&&data!=null){String selected=data.getStringExtra("selection");
@@ -156,6 +178,19 @@ public class MainActivity extends Activity {
   if(request==PICK_FILE&&fileCallback!=null){fileCallback.onReceiveValue(result==RESULT_OK&&data!=null&&data.getData()!=null?new Uri[]{data.getData()}:null);fileCallback=null;}
   if(request==SAVE_FILE){String text=exportText;exportText=null;if(result==RESULT_OK&&text!=null&&data!=null&&data.getData()!=null){try(OutputStream stream=getContentResolver().openOutputStream(data.getData())){if(stream==null)throw new java.io.IOException();stream.write(text.getBytes(StandardCharsets.UTF_8));toast("File saved.");}catch(Exception e){toast("The file could not be saved.");}}}
  }
+ static boolean validResolvedVin(String resolved,String requestId,String suffix){
+  if(resolved==null||resolved.length()>6000||requestId==null||suffix==null||!suffix.matches("[A-HJ-NPR-Z0-9]{8}"))return false;
+  try{JSONObject value=new JSONObject(resolved);String vin=value.optString("vin");return requestId.equals(value.optString("requestId"))&&suffix.equals(value.optString("suffix"))&&vin.matches("[A-HJ-NPR-Z0-9]{17}")&&vin.endsWith(suffix)&&value.optBoolean("confirmed")&&value.optString("vehicle").length()<=2000;}catch(Exception error){return false;}
+ }
+ private void notifyVinResolved(String requestId,String suffix,String resolved,String error){
+  if(requestId==null)return;
+  try{
+   boolean valid=validResolvedVin(resolved,requestId,suffix);
+   if(valid)getSharedPreferences("vin-results",MODE_PRIVATE).edit().putString("pending",resolved).apply();
+   JSONObject value=valid?new JSONObject(resolved):new JSONObject().put("requestId",requestId).put("suffix",suffix==null?"":suffix).put("error",error).put("confirmed",false);
+   runOnUiThread(()->{if(!isFinishing()&&!isDestroyed())web.evaluateJavascript("window.dispatchEvent(new CustomEvent('parts-vin-resolved',{detail:"+value.toString()+"}));",null);});
+  }catch(Exception ignored){}
+ }
  private void rejectEpcLaunch(String requestId){runOnUiThread(()->{if(isFinishing()||isDestroyed())return;toast("The catalog lookup needs a valid VIN and base number.");if(requestId!=null)notifyEpcClosed(requestId);else if(epcRequestId==null)web.evaluateJavascript("window.dispatchEvent(new Event('parts-epc-launch-failed'));",null);});}
  private void notifyEpcClosed(String requestId){if(requestId!=null&&!isDestroyed())web.evaluateJavascript("window.dispatchEvent(new CustomEvent('parts-epc-closed',{detail:{requestId:"+JSONObject.quote(requestId)+"}}));",null);}
  static boolean validEpcResult(String selected,String requestId,String vin,String[] bases){
@@ -163,7 +198,7 @@ public class MainActivity extends Activity {
   try{JSONObject part=new JSONObject(selected);if(!requestId.equals(part.optString("requestId"))||!vin.equals(part.optString("vin"))||!part.optString("serviceNumber").matches("[A-Z0-9][A-Z0-9 -]{2,39}")||part.optBoolean("requiresCatalogReview"))return false;for(String base:bases)if(base.equals(part.optString("base")))return true;}catch(Exception ignored){}return false;
  }
  @Override public void onBackPressed(){web.evaluateJavascript("(()=>{const d=document.querySelector('dialog[open]');if(d){d.close();return true;}return false;})()",value->{if(!"true".equals(value)){if(web.canGoBack())web.goBack();else super.onBackPressed();}});}
- @Override protected void onSaveInstanceState(Bundle state){super.onSaveInstanceState(state);state.putString("epc-request-id",epcRequestId);state.putString("epc-vin",epcVin);state.putStringArray("epc-bases",epcBases);web.saveState(state);}
+ @Override protected void onSaveInstanceState(Bundle state){super.onSaveInstanceState(state);state.putString("epc-request-id",epcRequestId);state.putString("epc-vin",epcVin);state.putStringArray("epc-bases",epcBases);state.putString("vin-resolve-id",vinResolveId);state.putString("vin-resolve-suffix",vinResolveSuffix);web.saveState(state);}
  @Override protected void onDestroy(){decoderExecutor.shutdownNow();if(fileCallback!=null)fileCallback.onReceiveValue(null);if(printWeb!=null)printWeb.destroy();web.removeJavascriptInterface("PartsNative");web.destroy();super.onDestroy();}
 }
 

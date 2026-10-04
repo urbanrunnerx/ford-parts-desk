@@ -4,7 +4,7 @@ An offline Ford base-number reference for a parts-department employee. Search a 
 
 [Project releases](https://github.com/urbanrunnerx/ford-parts-desk/releases) · [Build checks](https://github.com/urbanrunnerx/ford-parts-desk/actions)
 
-The catalog and features below describe this source tree. Ford Parts Desk is a separately installed replacement. A signed [v3.0.0 release](https://github.com/urbanrunnerx/ford-parts-desk/releases/tag/v3.0.0) is available. Unsigned and debug test artifacts are not a user-ready release.
+The catalog and features below describe this source tree. Ford Parts Desk is a separately installed replacement. Download the verified signed APK from [Project releases](https://github.com/urbanrunnerx/ford-parts-desk/releases). Unsigned and debug workflow artifacts are for testing, not installation as a release.
 
 ## Included catalog
 
@@ -28,6 +28,7 @@ Search **purge valve** → one **EVAP purge valve** card, with **9C915** and **9
 - Job desk with separate vehicles, job/RO references, quantities, counter notes and selected full service numbers. VIN changes mark earlier selections for rechecking.
 - Dedicated Snap-on menu: enter a VIN and search a common part name with the same offline family index. Choose the family and starting base; a different VIN opens its own job.
 - Native guided Snap-on lookup on Android: VIN/base load after sign-in, with dropdowns for available locations, systems, sections and illustrations. Review application/date/quantity cards and return an employee-selected service number to the correct job.
+- Optional **View diagram** on each guided service-part card. The app verifies the live part and current illustration before showing a memory-only native preview with pinch/drag, zoom buttons, Fit, Close and Back. Nothing opens automatically.
 - Copy selected service numbers and combined quantities without the VIN or counter notes; stale, unrelated and unselected items are excluded. Copy, print or export a full job; mark it done or reopen it. Backups include all jobs, selected parts and the VIN decoder cache. Existing v1 worksheets, notes and saved parts migrate on upgrade.
 - Native clipboard copy, CSV exports, CSV reference imports and JSON workspace backup/restore.
 - Full-number breakdown; example service-number matching and conservative compact decoding.
@@ -37,7 +38,7 @@ Browser and Android storage are separate. Back up the workspace before reinstall
 
 ## VIN to service part
 
-1. Open **Snap-on**. Enter the VIN and a common part description, synonym, base or service number.
+1. Open **Snap-on**. Enter the full VIN or its last eight characters and a common part description, synonym, base or service number. Confirm the resolved full vehicle identity before continuing with a short VIN.
 2. Choose a matching family. Alternate bases stay together; choose the base to try first.
 3. Tap **Find in integrated Snap-on**. Sign in on the phone through **Catalog / sign in** when needed; the desktop login does not transfer.
 4. The app loads the VIN and searches the selected base. Use **Find parts** to retry or search another base. Keep VIN filters enabled.
@@ -45,6 +46,18 @@ Browser and Android storage are separate. Back up the workspace before reinstall
 6. Review service-part cards with the application, restrictions, build dates and quantity. Tap **Review this part**, then **Save to job**. The adapter checks the current VIN, base, catalog path and displayed part again before saving.
 
 Existing family details and job rows also open this guided lookup. **Catalog / sign in** exposes the original catalog for authentication, diagrams or unsupported screens; **Guided lookup** returns to the app controls. **Load more catalog results** advances the rendered rows when the catalog uses a scrolling grid and retains up to 150 deduplicated observed part records for the current request, VIN, base and catalog path. Previously loaded parts return to their original viewport for a fresh live check before review. A newly seen continuation without its application heading is flagged for catalog review; missing restrictions are never inferred. The limit and loaded count are shown explicitly.
+
+### Optional part diagram
+
+Tap **View diagram** on a service-part card when you want a picture. The preview uses the original drawing currently rendered beside that same catalog's parts grid. It does not search the internet for a similar-looking part or infer an illustration from a base number. The verified row's **Call/Base** is shown as a label to find in the drawing; no service-specific highlight or hotspot is invented. Existing catalog selection overlays are excluded.
+
+The image is generated only after a tap, stays in memory, and is discarded on close, pause or a changed catalog identity. Pixel fingerprints bind it to the current drawing as well as the VIN, base, request and part. Off-screen parts return to their original complete row for verification first. Use pinch/drag, **Zoom in**, **Zoom out** and **Fit**; **Close** or Android Back returns to the preserved results. Missing, incomplete, changed, unsupported or oversized illustrations offer the original catalog instead. Some parts do not have an illustrated view.
+
+### Full VIN or last eight
+
+The entry forms accept a full 17-character VIN or its last eight characters. Saved jobs and decoded vehicles can supply matching full VINs offline; every short-VIN match needs an explicit vehicle confirmation, even if there is only one. On Android, **Find full VIN in Snap-on** can resolve an unfamiliar suffix using the signed-in catalog. Confirm the returned full VIN and vehicle details before continuing. Ambiguous, missing or interrupted results require catalog attention or the full VIN; the previous vehicle displayed behind an error is never accepted as a new result.
+
+Jobs and selected parts still use the complete VIN. Suffixes are never padded or treated as a vehicle identity, and they are not sent to NHTSA for a guessed decode. Existing full-VIN entry and workspace backups remain compatible. The browser version can recall saved full VINs; unfamiliar suffixes require the full VIN or Android's integrated catalog.
 
 The interface reads the rendered page in an isolated Snap-on session. It is not a licensed Snap-on API integration or automatic fitment decision. Credentials are entered only on the original sign-in page and are not read by the adapter. Native choices are taken from recognized catalog navigation controls; ordering, picklist and CDK controls are not driven by the adapter. If the catalog changes or rejects its embedded session, the app shows an explicit catalog fallback. Lists contain observed rendered rows, not an exhaustive fitment result. The app keeps the catalog page warm between lookups for up to five minutes of idle time, with Activity-bound callbacks and contexts detached between screens. Memory pressure and background transitions can discard an idle session. This reduces repeated page loads but does not remove the website dependency or bypass sign-in.
 
@@ -56,13 +69,15 @@ The browser version opens Snap-on separately and lets the employee record a revi
 
 ## Android installation and builds
 
-Android 8.0+ with a current Android System WebView. Download the signed APK from [GitHub Releases](https://github.com/urbanrunnerx/ford-parts-desk/releases) on the phone and follow the Android installation prompts. Keep the previous app until the backup has been restored and checked.
+Android 8.0+ with a current Android System WebView. Download the signed release APK on the phone and follow the Android installation prompts. Keep the previous app until the backup has been restored and checked. Subsequent signed Ford Parts Desk versions update the same app when signed with the same key and a higher version code.
 
 GitHub Actions builds and instruments the replacement identity `dev.urbanrunnerx.partsdesk`. It enables KVM on the hosted runner and runs the catalog/search tests, checks catalog reproducibility, builds Android APKs, runs Android lint and Android emulator tests for the offline app, guided controls and catalog adapter. Workflow artifacts include an **unsigned release** APK, a **debug test-only** APK, and test reports with fixture screenshots. They are not a signed user release. Only the signed APK attached to a release is the intended user download. Debug APK signatures can change between runs; do not install a debug APK over the signed release.
 
-Future releases use the tag-triggered **Publish signed Android release** workflow. It runs the complete build/test workflow without signing credentials, signs only the release APK in a separate job, verifies its signature and existing certificate identity, and publishes `Ford-Parts-Desk.apk` plus `SHA256SUMS.txt` after checking the uploaded bytes. Only the publishing job has release-write permission. Missing or invalid signing inputs stop publication; there is no debug-key fallback.
+The repository provides the tag-triggered **Publish signed Android release** workflow. It runs the complete build/test workflow without signing credentials, signs only the release APK in a separate job, verifies its signature and existing certificate identity, and publishes `Ford-Parts-Desk.apk` plus `SHA256SUMS.txt` after checking the uploaded bytes. Only the publishing job has release-write permission. Missing or invalid signing inputs stop publication; there is no debug-key fallback.
 
-**Maintainer setup is still required before the next tag:** configure the four signing secrets in the `android-release` environment using the **same key that signed v3.0.0**. Back up that key and its passwords privately. See [RELEASING.md](RELEASING.md) for exact inputs, protection settings, version/tag rules and recovery steps. No signing credentials are stored in this repository, and this workflow change does not create another release.
+**Maintainer setup is still required before using automated tag publication:** configure the four signing secrets in the `android-release` environment using the **same key that signed v3.0.0**. Back up that key and its passwords privately. See [RELEASING.md](RELEASING.md) for exact inputs, protection settings, version/tag rules and recovery steps. No signing credentials are stored in this repository, and this workflow change does not create another release.
+
+Until that setup is complete, an explicitly approved release may be signed privately with the same established key after all checks pass, then published with its checksum. The private key is never a release asset. A separate private key backup remains pending.
 
 Local build requirements: JDK 17, Gradle 8.13, Android SDK 35/build-tools 35.0.0.
 
@@ -76,12 +91,12 @@ gradle :android:app:assembleRelease :android:app:lintDebug
 
 Builds use application ID `dev.urbanrunnerx.partsdesk`, launcher name **Ford Parts Desk**, and an original parts-drawer icon. The previous app and this replacement have separate private storage and can coexist; neither removes or edits the other. No special build flag is required.
 
-Release output remains unsigned until a durable owner-controlled release key is configured. An ephemeral debug key is for emulator tests only, never a release/update identity.
+Workflow release output is unsigned; the published user APK is signed separately with the established release key. An ephemeral debug key is for emulator tests only, never a release/update identity.
 
 ### Bring over an existing workspace
 
 1. Keep the previous app installed. In it, open **Tools → Back up my workspace** and save the JSON file somewhere you can select later, such as Downloads.
-2. After a properly signed Ford Parts Desk build is available, install it alongside the old app.
+2. Install the signed Ford Parts Desk APK alongside the old app.
 3. In Ford Parts Desk, open **Tools → Restore a workspace**, select the JSON backup, and approve replacing **Ford Parts Desk’s** workspace.
 4. Check saved parts, jobs, quantities, selected service numbers and notes before relying on the new app. Recent searches, imported references, VIN decoder cache, theme and layout are included. Legacy schema-1 worksheets are supported too.
 5. Sign in to Snap-on separately in Ford Parts Desk. Authentication cookies, passwords and in-progress catalog sessions do not transfer. Keep the old app until the migrated workspace has been checked.

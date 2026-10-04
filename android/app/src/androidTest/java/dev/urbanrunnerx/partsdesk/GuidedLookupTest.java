@@ -39,7 +39,7 @@ public class GuidedLookupTest {
   AtomicBoolean ready=new AtomicBoolean();
   scenario.onActivity(a->{
    View root=a.getWindow().getDecorView();
-   View target=name.equals("guided-choices.png")?root.findViewWithTag("guided-choices"):name.equals("guided-parts.png")?root.findViewWithTag("guided-parts"):root;
+   View target=name.equals("guided-choices.png")?root.findViewWithTag("guided-choices"):name.equals("guided-parts.png")?root.findViewWithTag("guided-parts"):name.equals("guided-diagram.png")?root.findViewWithTag("part-diagram-panel"):root;
    ready.set(target!=null&&target.isShown()&&target.isLaidOut()&&target.getWidth()>0&&target.getHeight()>0);
   });
   return ready.get();
@@ -80,7 +80,7 @@ public class GuidedLookupTest {
   Bitmap bitmap=InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot();assertNotNull("Emulator screenshot failed",bitmap);
   try(FileOutputStream out=new FileOutputStream(file)){assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG,100,out));}finally{bitmap.recycle();}
   // CI uninstalls the test app after execution; export fixture previews before that cleanup.
-  assertTrue(name.matches("(?:guided-(?:choices|parts)|snapon-menu|parts-home|parts-search-dark)\\.png"));
+  assertTrue(name.matches("(?:guided-(?:choices|parts|diagram)|snapon-menu|parts-home|parts-search-dark)\\.png"));
   String shared="/sdcard/Download/partsdesk-preview/"+name;
   shell("mkdir -p /sdcard/Download/partsdesk-preview");
   shell("cp "+file.getAbsolutePath()+" "+shared);
