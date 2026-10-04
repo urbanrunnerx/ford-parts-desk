@@ -4,7 +4,7 @@ An offline Ford base-number reference for a parts-department employee. Search a 
 
 [Project releases](https://github.com/urbanrunnerx/ford-parts-desk/releases) · [Build checks](https://github.com/urbanrunnerx/ford-parts-desk/actions)
 
-The catalog and features below describe this source tree. Ford Parts Desk is a separately installed replacement; a signed release of this version has not yet been published. Unsigned and debug test artifacts are not a user-ready release.
+The catalog and features below describe this source tree. Ford Parts Desk is a separately installed replacement. A signed [v3.0.0 release](https://github.com/urbanrunnerx/ford-parts-desk/releases/tag/v3.0.0) is available. Unsigned and debug test artifacts are not a user-ready release.
 
 ## Included catalog
 
@@ -56,11 +56,13 @@ The browser version opens Snap-on separately and lets the employee record a revi
 
 ## Android installation and builds
 
-Android 8.0+ with a current Android System WebView. Once a verified signed release is published, download its APK on the phone and follow the Android installation prompts. Keep the previous app until the backup has been restored and checked.
+Android 8.0+ with a current Android System WebView. Download the signed APK from [GitHub Releases](https://github.com/urbanrunnerx/ford-parts-desk/releases) on the phone and follow the Android installation prompts. Keep the previous app until the backup has been restored and checked.
 
 GitHub Actions builds and instruments the replacement identity `dev.urbanrunnerx.partsdesk`. It enables KVM on the hosted runner and runs the catalog/search tests, checks catalog reproducibility, builds Android APKs, runs Android lint and Android emulator tests for the offline app, guided controls and catalog adapter. Workflow artifacts include an **unsigned release** APK, a **debug test-only** APK, and test reports with fixture screenshots. They are not a signed user release. Only the signed APK attached to a release is the intended user download. Debug APK signatures can change between runs; do not install a debug APK over the signed release.
 
-A durable owner-controlled release signing key must be configured before distributing Ford Parts Desk. Keep the private key and password backed up outside this repository. Later updates to this replacement must use the same key and a larger `versionCode`. Sign an unsigned APK with Android SDK `apksigner`, verify it, then attach it to an approved GitHub release as `Ford-Parts-Desk.apk`. No signing credentials are stored in this repository.
+Future releases use the tag-triggered **Publish signed Android release** workflow. It runs the complete build/test workflow without signing credentials, signs only the release APK in a separate job, verifies its signature and existing certificate identity, and publishes `Ford-Parts-Desk.apk` plus `SHA256SUMS.txt` after checking the uploaded bytes. Only the publishing job has release-write permission. Missing or invalid signing inputs stop publication; there is no debug-key fallback.
+
+**Maintainer setup is still required before the next tag:** configure the four signing secrets in the `android-release` environment using the **same key that signed v3.0.0**. Back up that key and its passwords privately. See [RELEASING.md](RELEASING.md) for exact inputs, protection settings, version/tag rules and recovery steps. No signing credentials are stored in this repository, and this workflow change does not create another release.
 
 Local build requirements: JDK 17, Gradle 8.13, Android SDK 35/build-tools 35.0.0.
 
@@ -115,4 +117,3 @@ Open `http://localhost:8097`. All dependencies and reference files are local. A 
 - [9D289 purge assembly example](https://www.fordpartsgiant.com/parts/ford-tube-asy-fuel-vapour-separat_k2gz-9d289-a.html)
 
 Ford and Motorcraft names identify the vehicles and public reference sources. This independent workspace is not affiliated with Ford or Snap-on and is not an official electronic parts catalog. Interface and launcher artwork are original code-native assets; see `BRANDING.md`.
-
