@@ -38,7 +38,7 @@ jobs:
         run: gradle :android:app:assembleRelease :android:app:assembleDebug :android:app:lintRelease :android:app:lintDebug --no-daemon
       - name: Exercise signing with a disposable test key
         run: |
-          sdkmanager 'build-tools;35.0.0'
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'build-tools;35.0.0'
           python3 tests/release_signing_test.py
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
