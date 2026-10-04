@@ -63,7 +63,7 @@ async function mount({ saved = {}, data = catalog, failFetch = false, native = f
   node('sort').value = 'relevance';
   const storage = new Map([...Object.entries(saved).map(([k,v]) => ['partsdesk-v1-' + k, JSON.stringify(v)]), ...Object.entries(rawStorage)]);
   const localStorage = { get length() { return storage.size; }, key: index => [...storage.keys()][index] ?? null, getItem: key => storage.get(key) ?? null, setItem: (key,value) => { if (failMarker && key === 'partsdesk-v1-migration-state') throw Error('Fixture marker quota'); storage.set(key,value); }, removeItem: key => storage.delete(key) };
-  const counter = { receiveEpc() {}, openJobs() {}, openJob() {}, openSnapOn() {}, openLookup() {}, addPart() {} };
+  const counter = { receiveEpc() {}, receiveVinResolution() {}, openJobs() {}, openJob() {}, openSnapOn() {}, openLookup() {}, addPart() {} };
   const timers = new Map(); let nextTimer = 0;
   const scope = {
     document, window: native ? { PartsNative: {} } : {}, localStorage,
@@ -221,7 +221,9 @@ test('neutral identity, offline cache scope and visible dialog dismissal are con
   assert.equal(manifest.name, 'Ford Parts Desk');
   assert.match(html, /<title>Ford Parts Desk<\/title>/);
   assert.match(html, /src="assets\/wordmark\.svg" alt="Ford Parts Desk"/);
-  assert.match(read('install.html'), /not yet released/);
+  assert.match(read('install.html'), /Download a signed Android release/);
+  assert.match(read('install.html'), /https:\/\/github\.com\/urbanrunnerx\/ford-parts-desk\/releases/);
+  assert.match(read('install.html'), /Unsigned and debug workflow artifacts are for testing/);
   assert.doesNotMatch(read('install.html'), /releases\/latest\/download/);
   assert.match(read('sw.js'), /caches\.open\(CACHE\)\.then\(cache=>cache\.match\(event\.request\)\)/);
   assert.match(read('sw.js'), /assets\/wordmark\.svg/);

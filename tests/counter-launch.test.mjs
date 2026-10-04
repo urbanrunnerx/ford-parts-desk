@@ -27,8 +27,8 @@ function mount(t,{bases=['1104'],openEpc,savePending}={}){
  });
  return {
   calls,messages,writes,storage,node,get job(){return job;},
-  launch(base='1104'){
-   counter.openLookup('fixture-row');node('#lookupVin').value=VIN;node('#lookupBase').value=base;node('#launchEpc').onclick();
+  launch(base='1104',vin=VIN){
+   counter.openLookup('fixture-row');node('#lookupVin').value=vin;node('#lookupBase').value=base;node('#launchEpc').onclick();
   },
   close(requestId){listeners.get('parts-epc-closed')?.({detail:{requestId}});},
   launchFailed(){listeners.get('parts-epc-launch-failed')?.({});},
@@ -95,4 +95,27 @@ test('synchronous native launch failure clears pending state and permits retry',
  assert.match(ui.messages.at(-1),/could not open/);
  fail=false;ui.launch();assert.equal(ui.calls.length,2);
  assert.equal(ui.storage.get('epc-pending').id,ui.calls[1].requestId);
+});
+
+
+test('a saved suffix never launches until its full vehicle is explicitly confirmed',t=>{
+ const ui=mount(t);ui.launch('1104',VIN.slice(-8));
+ assert.equal(ui.calls.length,0);assert.equal(ui.writes.length,0);
+ assert.match(ui.node('#lookupVinChoices').innerHTML,/Confirm this vehicle/);
+ const button={dataset:{confirmVin:VIN,vinSuffix:VIN.slice(-8)}};
+ ui.node('#lookupVinChoices').onclick({target:{closest:selector=>selector==='[data-confirm-vin]'?button:null}});
+ assert.equal(ui.node('#lookupVin').value,VIN);ui.node('#launchEpc').onclick();
+ assert.equal(ui.calls.length,1);assert.equal(ui.calls[0].vin,VIN);
+ assert.equal(ui.storage.get('epc-pending').vin,VIN);
+});
+
+test('unmatched or changed suffix cannot attach a selection or launch a part lookup',t=>{
+ const ui=mount(t);ui.launch('1104','ZZ123456');
+ assert.equal(ui.calls.length,0);assert.equal(ui.writes.length,0);
+ assert.match(ui.node('#lookupStatus').textContent,/No saved full VIN matches/);
+ ui.node('#manualPart').onsubmit({preventDefault(){}});
+ assert.equal(ui.job.rows[0].selection,undefined);
+ const oldChoice={dataset:{confirmVin:VIN,vinSuffix:VIN.slice(-8)}};
+ ui.node('#lookupVinChoices').onclick({target:{closest:selector=>selector==='[data-confirm-vin]'?oldChoice:null}});
+ assert.equal(ui.node('#lookupVin').value,'ZZ123456');
 });

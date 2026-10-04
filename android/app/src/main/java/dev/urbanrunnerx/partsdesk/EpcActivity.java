@@ -33,7 +33,7 @@ public class EpcActivity extends Activity {
  private WebView web;
  private EpcSessionStore sessions;
  private EpcSessionStore.Session session;
- private FrameLayout stack;
+ private FrameLayout stack,screen;
  private TextView status,vehicle;
  private Spinner bases;
  private ProgressBar progress;
@@ -41,6 +41,11 @@ public class EpcActivity extends Activity {
  private ScrollView guided;
  private LinearLayout content;
  private AlertDialog reviewDialog;
+ private PartDiagramPanel diagramPanel;
+ private JSONObject diagramPart,diagramSnapshot;
+ private String diagramSnapshotId="",diagramVin="",diagramBase="",diagramRequestId="";
+ private int diagramGeneration,diagramScroll;
+ private boolean diagramStale;
  private String vin,requestId,adapter,currentBase,renderedKey="",uiScope="",pendingPartId="";
  private final Map<String,String> choicesByGroup=new HashMap<>();
  private final Map<String,Spinner> choiceMenus=new HashMap<>();
@@ -72,7 +77,7 @@ public class EpcActivity extends Activity {
    byte[] buffer=new byte[8192];int count;while((count=in.read(buffer))!=-1)out.write(buffer,0,count);adapter=out.toString("UTF-8");
   }catch(Exception e){finish();return;}
 
-  LinearLayout root=column(NAVY);root.setOnApplyWindowInsetsListener((view,insets)->{view.setPadding(insets.getSystemWindowInsetLeft(),insets.getSystemWindowInsetTop(),insets.getSystemWindowInsetRight(),insets.getSystemWindowInsetBottom());return insets;});
+  LinearLayout root=column(NAVY);screen=new FrameLayout(this);screen.setBackgroundColor(NAVY);screen.addView(root,new FrameLayout.LayoutParams(-1,-1));screen.setOnApplyWindowInsetsListener((view,insets)->{view.setPadding(insets.getSystemWindowInsetLeft(),insets.getSystemWindowInsetTop(),insets.getSystemWindowInsetRight(),insets.getSystemWindowInsetBottom());return insets;});
   LinearLayout heading=column(NAVY);heading.setPadding(dp(18),dp(14),dp(18),dp(12));heading.addView(label("FORD PARTS DESK  /  LOOKUP",11,0xff9fb9e5,true));
   String partName=getIntent().getStringExtra("partName");if(partName!=null)partName=partName.trim();
   TextView title=label(partName==null||partName.isEmpty()?"The right part. This vehicle.":partName.substring(0,Math.min(160,partName.length())),23,Color.WHITE,true);title.setMaxLines(2);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setPadding(0,dp(7),0,dp(9));heading.addView(title);
@@ -88,7 +93,7 @@ public class EpcActivity extends Activity {
   // Both layers stay fully measured: a GONE/tiny WebView breaks virtualized catalog grids.
   stack=new FrameLayout(this);session=sessions.acquire(this);web=session.web;configureWebView();
   stack.addView(web,new FrameLayout.LayoutParams(-1,-1));guided=new ScrollView(this);guided.setFillViewport(true);guided.setBackgroundColor(PAPER);guided.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);content=column(PAPER);content.setTag("guided-content");content.setPadding(dp(16),dp(18),dp(16),dp(24));guided.addView(content,new ScrollView.LayoutParams(-1,-2));stack.addView(guided,new FrameLayout.LayoutParams(-1,-1));root.addView(stack,new LinearLayout.LayoutParams(-1,0,1));
-  LinearLayout footer=new LinearLayout(this);footer.setPadding(dp(8),dp(6),dp(8),dp(6));footer.setBackgroundColor(Color.WHITE);Button back=button("Back to job",false,this::finish);catalogButton=button("Catalog / sign in",false,()->setCatalogVisible(!catalogVisible));refreshButton=button("Refresh",false,()->{if(catalogFailed||catalogVisible)retryConnection();else refreshSnapshot();});refreshButton.setTag("guided-refresh");footer.addView(back,new LinearLayout.LayoutParams(0,dp(48),1));footer.addView(catalogButton,new LinearLayout.LayoutParams(0,dp(48),1.4f));footer.addView(refreshButton,new LinearLayout.LayoutParams(0,dp(48),.8f));root.addView(footer);setContentView(root);
+  LinearLayout footer=new LinearLayout(this);footer.setPadding(dp(8),dp(6),dp(8),dp(6));footer.setBackgroundColor(Color.WHITE);Button back=button("Back to job",false,this::finish);catalogButton=button("Catalog / sign in",false,()->setCatalogVisible(!catalogVisible));refreshButton=button("Refresh",false,()->{if(catalogFailed||catalogVisible)retryConnection();else refreshSnapshot();});refreshButton.setTag("guided-refresh");footer.addView(back,new LinearLayout.LayoutParams(0,dp(48),1));footer.addView(catalogButton,new LinearLayout.LayoutParams(0,dp(48),1.4f));footer.addView(refreshButton,new LinearLayout.LayoutParams(0,dp(48),.8f));root.addView(footer);setContentView(screen);
   showMessage("Your catalog, simpler.","Sign in once, then choose locations and illustrations here. Parts are read from your current VIN-filtered catalog.");
   bases.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){public void onNothingSelected(AdapterView<?> parent){}public void onItemSelected(AdapterView<?> parent,View view,int position,long id){String selected=values[position];if(!selected.equals(currentBase)){currentBase=selected;autoStartPending=false;invalidateLookup();showMessage("Base "+currentBase,"Tap Find parts to look up this base for the current vehicle.");schedule(100);}}});
   setCatalogVisible(state!=null&&state.getBoolean("catalog-visible",false));
@@ -133,12 +138,12 @@ public class EpcActivity extends Activity {
 
  /** Exposes the same isolated session only for authentication or catalog-specific exceptions. */
  public void setCatalogVisible(boolean visible){
-  if(destroyed||web==null||guided==null)return;catalogVisible=visible;guided.setVisibility(visible?View.INVISIBLE:View.VISIBLE);web.setImportantForAccessibility(visible?View.IMPORTANT_FOR_ACCESSIBILITY_AUTO:View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);web.setFocusable(visible);web.setFocusableInTouchMode(visible);catalogButton.setText(visible?"Guided lookup":"Catalog / sign in");if(!visible){lookupCancelled=false;web.clearFocus();guided.requestFocus();schedule(100);}
+  if(destroyed||web==null||guided==null)return;if(diagramPanel!=null)closeDiagram(false);catalogVisible=visible;guided.setVisibility(visible?View.INVISIBLE:View.VISIBLE);web.setImportantForAccessibility(visible?View.IMPORTANT_FOR_ACCESSIBILITY_AUTO:View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);web.setFocusable(visible);web.setFocusableInTouchMode(visible);catalogButton.setText(visible?"Guided lookup":"Catalog / sign in");if(!visible){lookupCancelled=false;web.clearFocus();guided.requestFocus();schedule(100);}
  }
  public void refreshSnapshot(){if(destroyed)return;lookupCancelled=false;if(catalogFailed){retryConnection();return;}invalidateLookup(false);setStatus("Checking the current catalog…",true);schedule(0);}
  private void invalidateLookup(){invalidateLookup(true);}
  private void invalidateLookup(boolean clearContent){
-  generation++;operationSerial++;activeCallback=null;inFlight=false;findPhase=IDLE;mutationPending=false;mutationSawBusy=false;pendingPartId="";latest=null;
+  closeDiagram(false);generation++;operationSerial++;activeCallback=null;inFlight=false;findPhase=IDLE;mutationPending=false;mutationSawBusy=false;pendingPartId="";latest=null;
   handler.removeCallbacks(poll);if(operationTimeout!=null)handler.removeCallbacks(operationTimeout);operationTimeout=null;
   if(reviewDialog!=null){reviewDialog.dismiss();reviewDialog=null;}handler.removeCallbacks(poll);
   if(clearContent){renderedKey="";if(content!=null)showMessage("Checking the catalog…","Selections will appear after the vehicle and catalog have been checked.");}updateEnabled();
@@ -158,28 +163,32 @@ public class EpcActivity extends Activity {
  private JSONObject request(JSONObject extra)throws JSONException{JSONObject request=new JSONObject().put("vin",vin).put("base",currentBase).put("requestId",requestId);if(extra!=null){java.util.Iterator<String> keys=extra.keys();while(keys.hasNext()){String key=keys.next();request.put(key,extra.get(key));}}return request;}
  private boolean allowed(Uri uri){String host=uri.getHost();return "https".equals(uri.getScheme())&&host!=null&&(host.equals("snaponepc.com")||host.endsWith(".snaponepc.com"));}
  private void runAdapter(String command,JSONObject extra,ResultCallback callback){
-  if(destroyed||!resumed||catalogFailed||lookupCancelled)return;if(inFlight){schedule(250);return;}String url=web.getUrl();if(url==null||!allowed(Uri.parse(url))){setStatus("Open the signed-in Snap-on catalog to continue.",false);return;}
+  if(destroyed||!resumed||catalogFailed||lookupCancelled)return;if(inFlight){schedule(250);return;}String url=web.getUrl();if(url==null||!allowed(Uri.parse(url))){setStatus("Open the signed-in Snap-on catalog to continue.",false);if(diagramPanel!=null)diagramUnavailable("Open the signed-in Snap-on catalog, then choose this part again.",false);return;}
   final int startedGeneration=generation;final long serial=++operationSerial;inFlight=true;updateEnabled();
-  operationTimeout=()->{if(destroyed||serial!=operationSerial)return;invalidateLookup(false);setStatus("The catalog did not respond. Tap Refresh to check it, or Retry connection below.",false);showRecovery("Catalog not responding","Your job is saved. Retry the connection if refreshing does not help.");};
+  operationTimeout=()->{if(destroyed||serial!=operationSerial)return;if(diagramPanel!=null){cancelDiagramOperation();diagramUnavailable("The catalog did not respond. Open the catalog or close this preview and retry the connection.",false);schedule(2500);return;}invalidateLookup(false);setStatus("The catalog did not respond. Tap Refresh to check it, or Retry connection below.",false);showRecovery("Catalog not responding","Your job is saved. Retry the connection if refreshing does not help.");};
   handler.postDelayed(operationTimeout,8000);
   activeCallback=callback;final WeakReference<EpcActivity> owner=new WeakReference<>(this);
   try{String script="(()=>{"+adapter+";return JSON.stringify(partsDeskEpc("+JSONObject.quote(command)+","+request(extra)+"));})()";web.evaluateJavascript(script,raw->{EpcActivity activity=owner.get();if(activity!=null)activity.receiveAdapterResult(serial,startedGeneration,command,raw);});}
-  catch(Exception error){activeCallback=null;if(operationTimeout!=null)handler.removeCallbacks(operationTimeout);operationTimeout=null;inFlight=false;findPhase=IDLE;mutationPending=false;pendingPartId="";setStatus("Unable to read the current catalog. Refresh to try again.",false);updateEnabled();}
+  catch(Exception error){activeCallback=null;if(operationTimeout!=null)handler.removeCallbacks(operationTimeout);operationTimeout=null;inFlight=false;findPhase=IDLE;mutationPending=false;pendingPartId="";setStatus("Unable to read the current catalog. Refresh to try again.",false);if(diagramPanel!=null)diagramUnavailable("Unable to check the current illustration. Close this preview and refresh the catalog.",false);updateEnabled();}
  }
  private void receiveAdapterResult(long serial,int startedGeneration,String command,String raw){
   if(destroyed||serial!=operationSerial||startedGeneration!=generation||!resumed)return;
   ResultCallback callback=activeCallback;activeCallback=null;inFlight=false;if(operationTimeout!=null)handler.removeCallbacks(operationTimeout);operationTimeout=null;
-  try{if(raw==null||raw.length()>2000000||callback==null)throw new JSONException("Invalid catalog response");JSONObject result=new JSONObject(String.valueOf(new JSONTokener(raw).nextValue()));if(result.has("error")){findPhase=IDLE;mutationPending=false;pendingPartId="";setStatus(result.optString("error","The catalog step could not be completed."),false);if(!"snapshot".equals(command))schedule(1600);}else callback.receive(result);}catch(Exception error){findPhase=IDLE;mutationPending=false;pendingPartId="";setStatus("The catalog is loading or its layout changed. Refresh, or open Catalog / sign in.",false);schedule(3000);}updateEnabled();
+  try{if(raw==null||raw.length()>2000000||callback==null)throw new JSONException("Invalid catalog response");JSONObject result=new JSONObject(String.valueOf(new JSONTokener(raw).nextValue()));if(result.has("error")){findPhase=IDLE;mutationPending=false;pendingPartId="";setStatus(result.optString("error","The catalog step could not be completed."),false);if(diagramPanel!=null)diagramUnavailable(result.optString("error","The illustration could not be verified. Close and choose this part again."),false);if(!"snapshot".equals(command))schedule(1600);}else callback.receive(result);}catch(Exception error){findPhase=IDLE;mutationPending=false;pendingPartId="";setStatus("The catalog is loading or its layout changed. Refresh, or open Catalog / sign in.",false);if(diagramPanel!=null)diagramUnavailable("The catalog is loading or its layout changed. Open the catalog or close and refresh.",false);schedule(3000);}updateEnabled();
  }
  private void readSnapshot(ResultCallback then){
   runAdapter("snapshot",null,result->{
    latest=result;boolean busy=result.optBoolean("busy")||"loading".equals(result.optString("stage"));String id=result.optString("snapshotId");if(mutationPending&&busy)mutationSawBusy=true;if(mutationPending&&!busy&&(!id.equals(beforeMutation)||mutationSawBusy))mutationPending=false;
    if((mutationPending&&SystemClock.elapsedRealtime()-mutationStarted>25000)||(!pendingPartId.isEmpty()&&SystemClock.elapsedRealtime()>locateDeadline)){
-    lookupCancelled=true;autoStartPending=false;invalidateLookup(false);setStatus("The catalog step did not finish. Refresh to check it, or retry the connection.",false);showRecovery("Catalog step did not finish","Check the current catalog before making another selection.");return;
+    if(diagramPanel!=null){cancelDiagramOperation();diagramUnavailable("This part could not be brought back into view. Open the catalog or close and repeat the lookup.",false);schedule(2500);return;}lookupCancelled=true;autoStartPending=false;invalidateLookup(false);setStatus("The catalog step did not finish. Refresh to check it, or retry the connection.",false);showRecovery("Catalog step did not finish","Check the current catalog before making another selection.");return;
    }
    if(!pendingPartId.isEmpty()&&!busy&&!mutationPending){
-    JSONArray found=result.optJSONArray("parts");for(int i=0;found!=null&&i<found.length();i++){JSONObject part=found.optJSONObject(i);if(part!=null&&pendingPartId.equals(part.optString("id"))&&part.optBoolean("visible",true)&&!part.optBoolean("requiresCatalogReview")){pendingPartId="";renderSnapshot(result);reviewPart(part,result);return;}}
+    JSONArray found=result.optJSONArray("parts");for(int i=0;found!=null&&i<found.length();i++){JSONObject part=found.optJSONObject(i);if(part!=null&&pendingPartId.equals(part.optString("id"))&&part.optBoolean("visible",true)&&!part.optBoolean("requiresCatalogReview")){pendingPartId="";if(diagramPanel!=null){requestDiagram(part,result);return;}renderSnapshot(result);reviewPart(part,result);return;}}
     if(SystemClock.elapsedRealtime()>locateDeadline){pendingPartId="";renderSnapshot(result);setStatus("This part is no longer visible in the catalog. Load more again or open the catalog to check it.",false);schedule(2500);return;}
+   }
+   if(diagramPanel!=null){
+    if(!diagramSnapshotId.isEmpty()&&(!diagramSnapshotId.equals(result.optString("snapshotId"))||!result.optBoolean("ready")||!vin.equals(result.optString("vin"))))diagramUnavailable("The catalog or illustration changed. Close this preview and choose the current part again.",false);
+    schedule(pendingPartId.isEmpty()?1200:650);return;
    }
    if(findPhase!=IDLE&&SystemClock.elapsedRealtime()>findDeadline){lookupCancelled=true;autoStartPending=false;invalidateLookup(false);setStatus("The catalog is taking longer than expected. Refresh to check it or retry the connection.",false);showRecovery("Lookup needs another try","The catalog did not confirm the requested search. Your job is unchanged.");return;}
    if(findPhase==WAIT_VIN){if(result.optBoolean("ready")&&!busy){findPhase=WAIT_SEARCH;mutate("search",null);return;}if("filters".equals(result.optString("stage"))&&vin.equals(result.optString("vin"))){findPhase=IDLE;mutationPending=false;setStatus("Enable VIN filters in the catalog, then tap Find parts.",false);setCatalogVisible(true);}else setStatus("Loading this vehicle in your catalog…",true);}
@@ -236,7 +245,53 @@ public class EpcActivity extends Activity {
  private void selectMore(JSONObject snapshot){if(!isCurrent(snapshot)){refreshSnapshot();return;}try{mutate("more",new JSONObject().put("snapshotId",snapshot.getString("snapshotId")));}catch(Exception e){refreshSnapshot();}}
  private boolean isCurrent(JSONObject snapshot){return !inFlight&&!mutationPending&&findPhase==IDLE&&pendingPartId.isEmpty()&&latest!=null&&vin.equals(latest.optString("vin"))&&snapshot.optString("snapshotId").equals(latest.optString("snapshotId"))&&latest.optBoolean("ready");}
  private void addPart(LinearLayout parent,JSONObject part,JSONObject snapshot){
-  if(!vin.equals(part.optString("vin"))||!currentBase.equals(part.optString("base")))return;LinearLayout card=card();card.setTag("guided-part-"+part.optString("serviceNumber"));card.addView(label("BASE "+currentBase+"  ·  SERVICE NUMBER",10,MUTED,true));TextView number=spaced(part.optString("serviceNumber"),23,INK);number.setTypeface(Typeface.MONOSPACE,Typeface.BOLD);number.setTextIsSelectable(true);card.addView(number);String description=part.optString("description");if(!description.isEmpty())card.addView(spaced(description,15,INK));addPartField(card,"Application",part.optString("application"));String from=part.optString("from"),to=part.optString("to");if(!from.isEmpty()||!to.isEmpty())addPartField(card,"Build dates",(from.isEmpty()?"Not shown":from)+" → "+(to.isEmpty()?"Not shown":to));addPartField(card,"Quantity",part.optString("quantity"));addPartField(card,"Catalog notes",part.optString("remarks"));boolean incomplete=part.optBoolean("requiresCatalogReview");if(incomplete)card.addView(spaced("The catalog has not exposed the complete application details for this row. Check it in the catalog before choosing a service number.",13,MUTED));else if(!part.optBoolean("visible",true))card.addView(spaced("Loaded earlier · returns to the catalog row for a fresh check.",12,MUTED));Button choose=button(incomplete?"Check in catalog":"Review this part",true,()->{if(incomplete)setCatalogVisible(true);else if(!part.optBoolean("visible",true))locatePart(part,snapshot);else reviewPart(part,snapshot);});LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(-1,dp(48));params.topMargin=dp(14);card.addView(choose,params);actionViews.add(choose);parent.addView(card);
+  if(!vin.equals(part.optString("vin"))||!currentBase.equals(part.optString("base")))return;LinearLayout card=card();card.setTag("guided-part-"+part.optString("serviceNumber"));card.addView(label("BASE "+currentBase+"  ·  SERVICE NUMBER",10,MUTED,true));TextView number=spaced(part.optString("serviceNumber"),23,INK);number.setTypeface(Typeface.MONOSPACE,Typeface.BOLD);number.setTextIsSelectable(true);card.addView(number);String description=part.optString("description");if(!description.isEmpty())card.addView(spaced(description,15,INK));addPartField(card,"Application",part.optString("application"));String from=part.optString("from"),to=part.optString("to");if(!from.isEmpty()||!to.isEmpty())addPartField(card,"Build dates",(from.isEmpty()?"Not shown":from)+" → "+(to.isEmpty()?"Not shown":to));addPartField(card,"Quantity",part.optString("quantity"));addPartField(card,"Catalog notes",part.optString("remarks"));boolean incomplete=part.optBoolean("requiresCatalogReview");if(incomplete)card.addView(spaced("The catalog has not exposed the complete application details for this row. Check it in the catalog before choosing a service number.",13,MUTED));else if(!part.optBoolean("visible",true))card.addView(spaced("Loaded earlier · returns to the catalog row for a fresh check.",12,MUTED));Button choose=button(incomplete?"Check in catalog":"Review this part",true,()->{if(incomplete)setCatalogVisible(true);else if(!part.optBoolean("visible",true))locatePart(part,snapshot);else reviewPart(part,snapshot);});LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(-1,dp(48));params.topMargin=dp(14);card.addView(choose,params);actionViews.add(choose);
+  Button diagram=button("View diagram",false,()->openDiagram(part,snapshot));diagram.setContentDescription("View diagram for "+part.optString("serviceNumber"));diagram.setTag("view-diagram-"+part.optString("serviceNumber"));LinearLayout.LayoutParams diagramParams=new LinearLayout.LayoutParams(-1,dp(48));diagramParams.topMargin=dp(6);card.addView(diagram,diagramParams);actionViews.add(diagram);parent.addView(card);
+ }
+
+ /** Starts only from an explicit per-part button. The underlying list remains mounted. */
+ private void openDiagram(JSONObject part,JSONObject snapshot){
+  if(diagramPanel!=null)return;if(!isCurrent(snapshot)){refreshSnapshot();return;}
+  handler.removeCallbacks(poll);diagramPart=part;diagramSnapshot=snapshot;diagramSnapshotId="";diagramVin=vin;diagramBase=currentBase;diagramRequestId=requestId;diagramGeneration=generation;diagramScroll=guided.getScrollY();diagramStale=false;
+  diagramPanel=new PartDiagramPanel(this,part.optString("serviceNumber"),vin,currentBase,()->closeDiagram(true),this::retryDiagram,()->setCatalogVisible(true));
+  screen.addView(diagramPanel,new FrameLayout.LayoutParams(-1,-1));screen.getChildAt(0).setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);diagramPanel.requestFocus();updateEnabled();
+  if(part.optBoolean("requiresCatalogReview")){diagramUnavailable("This row does not expose its complete application. Open the catalog to inspect its illustration.",false);return;}
+  if(!part.optBoolean("visible",true)){
+   diagramPanel.setLoading("Returning to this part for a fresh catalog check…");
+   locatePart(part,snapshot);
+  }else requestDiagram(part,snapshot);
+ }
+ private boolean diagramScopeCurrent(){return diagramPanel!=null&&!destroyed&&resumed&&diagramGeneration==generation&&diagramVin.equals(vin)&&diagramBase.equals(currentBase)&&diagramRequestId.equals(requestId);}
+ private void requestDiagram(JSONObject part,JSONObject snapshot){
+  if(!diagramScopeCurrent())return;diagramPart=part;diagramSnapshot=snapshot;diagramSnapshotId=snapshot.optString("snapshotId");diagramPanel.setLoading("Checking this part and its current illustration…");
+  try{
+   JSONObject extra=new JSONObject().put("partId",part.getString("id")).put("snapshotId",diagramSnapshotId);
+   runAdapter("diagram",extra,result->{
+    if(!diagramScopeCurrent())return;
+    JSONObject diagram=result.optJSONObject("diagram");
+    if(!validDiagramResult(result,part,snapshot,vin,currentBase,requestId)){diagramUnavailable("This part or illustration could not be verified. Close this preview and choose the current part again.",false);schedule(1200);return;}
+    if("available".equals(diagram.optString("status"))){
+     if(!diagramPanel.showImage(diagram.optString("dataUrl"),diagram.optString("title"),diagram.optString("callout")))diagramUnavailable("This illustration could not be displayed safely. You can inspect it in the catalog.",true);
+    }else diagramUnavailable(diagram.optString("message","No verified diagram is available for this part. You can inspect the catalog."),true);
+    setStatus("Diagram open. Your part selection is unchanged.",false);schedule(1200);
+   });
+  }catch(JSONException error){diagramUnavailable("This part is no longer available. Close this preview and refresh the catalog.",false);}
+ }
+ /** Keep this boundary independent of UI state so every identity is regression-tested. */
+ static boolean validDiagramResult(JSONObject result,JSONObject expected,JSONObject snapshot,String vin,String base,String requestId){
+  if(result==null||expected==null||snapshot==null)return false;JSONObject part=result.optJSONObject("part"),diagram=result.optJSONObject("diagram");
+  if(part==null||diagram==null||expected.optString("id").isEmpty()||!expected.optString("id").equals(part.optString("id"))||!vin.equals(part.optString("vin"))||!base.equals(part.optString("base"))||!expected.optString("serviceNumber").equals(part.optString("serviceNumber"))||part.optBoolean("requiresCatalogReview")||!part.optBoolean("visible",true)||snapshot.optString("snapshotId").isEmpty()||!snapshot.optString("snapshotId").equals(result.optString("snapshotId"))||!requestId.equals(result.optString("requestId")))return false;
+  String status=diagram.optString("status");return "catalog".equals(status)||"unavailable".equals(status)||("available".equals(status)&&!diagram.optString("sourceId").isEmpty()&&diagram.optString("sourceId").equals(snapshot.optString("diagramSourceId")));
+ }
+ private void retryDiagram(){
+  if(!diagramScopeCurrent()||diagramStale||inFlight||diagramPart==null||latest==null)return;
+  if(!diagramSnapshotId.equals(latest.optString("snapshotId"))){diagramUnavailable("The catalog changed. Close and choose the current part again.",false);return;}
+  handler.removeCallbacks(poll);requestDiagram(diagramPart,diagramSnapshot);
+ }
+ private void diagramUnavailable(String message,boolean canRetry){if(diagramPanel==null)return;diagramStale=!canRetry;diagramPanel.unavailable(message,canRetry);}
+ private void cancelDiagramOperation(){operationSerial++;activeCallback=null;inFlight=false;mutationPending=false;mutationSawBusy=false;findPhase=IDLE;pendingPartId="";if(operationTimeout!=null)handler.removeCallbacks(operationTimeout);operationTimeout=null;}
+ private void closeDiagram(boolean resumeLookup){
+  if(diagramPanel==null)return;handler.removeCallbacks(poll);cancelDiagramOperation();PartDiagramPanel previous=diagramPanel;diagramPanel=null;previous.clearImage();screen.removeView(previous);diagramPart=null;diagramSnapshot=null;diagramSnapshotId="";screen.getChildAt(0).setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);guided.scrollTo(0,diagramScroll);guided.requestFocus();setStatus("Diagram closed. Your part selection is unchanged.",false);updateEnabled();if(resumeLookup)schedule(0);
  }
  private void addPartField(LinearLayout card,String name,String value){if(value==null||value.isEmpty())return;card.addView(spaced(name+"  ·  "+value,13,MUTED));}
  private ArrayAdapter<String> choiceAdapter(List<String> labels){return new ArrayAdapter<String>(this,android.R.layout.simple_spinner_dropdown_item,labels){
@@ -252,7 +307,7 @@ public class EpcActivity extends Activity {
   }));reviewDialog.setOnDismissListener(dialog->{reviewDialog=null;if(!isFinishing()&&!destroyed)schedule(2000);});reviewDialog.show();
  }
 
- private void updateEnabled(){boolean enabled=latest!=null&&!catalogFailed&&!inFlight&&!mutationPending&&findPhase==IDLE&&pendingPartId.isEmpty();if(findButton!=null)findButton.setEnabled(!inFlight&&!mutationPending&&findPhase==IDLE&&pendingPartId.isEmpty());if(bases!=null)bases.setEnabled(!inFlight&&!mutationPending&&findPhase==IDLE&&pendingPartId.isEmpty());for(View view:actionViews)view.setEnabled(enabled);}
+ private void updateEnabled(){boolean enabled=diagramPanel==null&&latest!=null&&!catalogFailed&&!inFlight&&!mutationPending&&findPhase==IDLE&&pendingPartId.isEmpty();if(findButton!=null)findButton.setEnabled(diagramPanel==null&&!inFlight&&!mutationPending&&findPhase==IDLE&&pendingPartId.isEmpty());if(bases!=null)bases.setEnabled(diagramPanel==null&&!inFlight&&!mutationPending&&findPhase==IDLE&&pendingPartId.isEmpty());for(View view:actionViews)view.setEnabled(enabled);}
  private void setStatus(String text,boolean loading){if(status!=null)status.setText(text);if(progress!=null)progress.setVisibility(loading?View.VISIBLE:View.INVISIBLE);if(cancelButton!=null)cancelButton.setVisibility(loading?View.VISIBLE:View.GONE);}
  private void showMessage(String title,String description){if(content==null)return;renderedKey="";captureChoices();content.removeAllViews();actionViews.clear();choiceMenus.clear();choiceOptions.clear();LinearLayout card=card();card.addView(label(title,21,INK,true));card.addView(spaced(description,15,MUTED));content.addView(card);}
  private void addContentButton(String title,Runnable action){Button button=button(title,true,action);LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(-1,dp(50));params.topMargin=dp(8);content.addView(button,params);if(title.equals("Load more catalog results"))actionViews.add(button);}
@@ -264,7 +319,7 @@ public class EpcActivity extends Activity {
  private int dp(int value){return Math.round(value*getResources().getDisplayMetrics().density);}
  @Override protected void onResume(){super.onResume();resumed=true;if(web!=null){web.onResume();if(pageLoading)handler.postDelayed(pageTimeout,30000);schedule(200);}}
  @Override protected void onPause(){resumed=false;boolean interrupted=findPhase!=IDLE||mutationPending||inFlight;invalidateLookup(false);handler.removeCallbacksAndMessages(null);if(interrupted){autoStartPending=false;setStatus("Lookup paused. Tap Find parts to retry if the catalog step did not finish.",false);}if(web!=null)web.onPause();super.onPause();}
- @Override public void onBackPressed(){if(catalogVisible){setCatalogVisible(false);return;}super.onBackPressed();}
+ @Override public void onBackPressed(){if(diagramPanel!=null){closeDiagram(true);return;}if(catalogVisible){setCatalogVisible(false);return;}super.onBackPressed();}
  @Override protected void onSaveInstanceState(Bundle state){super.onSaveInstanceState(state);captureChoices();state.putString("lookup-base",currentBase);state.putBoolean("catalog-visible",catalogVisible);state.putBoolean("lookup-auto-start",autoStartPending);state.putString("lookup-ui-scope",uiScope);state.putInt("lookup-scroll",guided==null?0:guided.getScrollY());Bundle selected=new Bundle();for(Map.Entry<String,String> entry:choicesByGroup.entrySet())selected.putString(entry.getKey(),entry.getValue());state.putBundle("lookup-choices",selected);}
  @Override protected void onDestroy(){destroyed=true;invalidateLookup(false);handler.removeCallbacksAndMessages(null);if(session!=null)sessions.release(session);web=null;session=null;super.onDestroy();}
 }
