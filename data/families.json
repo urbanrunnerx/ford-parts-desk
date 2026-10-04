@@ -1,0 +1,754 @@
+[
+  {
+    "name": "EVAP purge valve",
+    "bases": [
+      "9C915",
+      "9D289"
+    ],
+    "aliases": [
+      "canister purge solenoid",
+      "vapor management valve",
+      "evap valve",
+      "fuel vapour separator tube"
+    ],
+    "category": "Fuel & emissions",
+    "note": "9C915 is a valve family. 9D289 can be a vapor-line assembly with an integrated purge valve; the valve may not be serviced separately. These are alternatives across applications, not interchangeable parts.",
+    "source": "https://www.fordpartsgiant.com/parts/ford-tube-asy-fuel-vapour-separat_k2gz-9d289-a.html",
+    "labels": {
+      "9C915": "Purge valve service family",
+      "9D289": "Vapor-line assembly; may include purge valve"
+    }
+  },
+  {
+    "name": "Engine oil filter",
+    "bases": [
+      "6731"
+    ],
+    "aliases": [
+      "oil filter",
+      "spin on filter",
+      "cartridge oil filter"
+    ],
+    "category": "Engine & cooling"
+  },
+  {
+    "name": "Engine air filter",
+    "bases": [
+      "9601"
+    ],
+    "aliases": [
+      "air cleaner element",
+      "air filter"
+    ],
+    "category": "Fuel & emissions"
+  },
+  {
+    "name": "Cabin air filter",
+    "bases": [
+      "19N619"
+    ],
+    "aliases": [
+      "pollen filter",
+      "ac filter",
+      "cabin filter"
+    ],
+    "category": "Climate control"
+  },
+  {
+    "name": "Blower motor",
+    "bases": [
+      "19805"
+    ],
+    "aliases": [
+      "heater fan",
+      "cabin fan",
+      "hvac fan motor"
+    ],
+    "category": "Climate control"
+  },
+  {
+    "name": "Blower motor resistor / controller",
+    "bases": [
+      "18591",
+      "19A706",
+      "19E624"
+    ],
+    "aliases": [
+      "fan speed controller",
+      "blower resistor",
+      "blower control module"
+    ],
+    "category": "Climate control"
+  },
+  {
+    "name": "Blend door actuator",
+    "bases": [
+      "19E616"
+    ],
+    "aliases": [
+      "temperature door motor",
+      "heater blend motor",
+      "ac actuator",
+      "clicking dash"
+    ],
+    "category": "Climate control"
+  },
+  {
+    "name": "Brake pads",
+    "bases": [
+      "2001",
+      "2200",
+      "2V001",
+      "2V200"
+    ],
+    "aliases": [
+      "front pads",
+      "rear pads",
+      "disc brake pad set"
+    ],
+    "category": "Brakes",
+    "note": "Front, rear and Motorcraft service families are grouped here. Position and vehicle application determine the correct base.",
+    "labels": {
+      "2001": "Front pad service family",
+      "2200": "Rear pad service family",
+      "2V001": "Motorcraft front service family",
+      "2V200": "Motorcraft rear service family"
+    }
+  },
+  {
+    "name": "Brake caliper",
+    "bases": [
+      "2B120",
+      "2B121",
+      "2552",
+      "2553",
+      "2V563"
+    ],
+    "aliases": [
+      "front caliper",
+      "rear caliper",
+      "disc brake caliper"
+    ],
+    "category": "Brakes"
+  },
+  {
+    "name": "Fuel pump",
+    "bases": [
+      "9350",
+      "9H307",
+      "9H407"
+    ],
+    "aliases": [
+      "gas pump",
+      "tank pump",
+      "in tank fuel pump",
+      "fuel pump sender"
+    ],
+    "category": "Fuel & emissions",
+    "note": "Mechanical and in-tank service families; verify pump type and application."
+  },
+  {
+    "name": "Fuel injector",
+    "bases": [
+      "9E527",
+      "9F593"
+    ],
+    "aliases": [
+      "diesel injector",
+      "gasoline injector",
+      "injection nozzle"
+    ],
+    "category": "Fuel & emissions"
+  },
+  {
+    "name": "Oxygen sensor",
+    "bases": [
+      "9F472",
+      "9G444"
+    ],
+    "aliases": [
+      "o2 sensor",
+      "lambda sensor",
+      "upstream oxygen sensor",
+      "downstream oxygen sensor",
+      "hego"
+    ],
+    "category": "Fuel & emissions",
+    "note": "Upstream and downstream families are shown together. Position matters.",
+    "labels": {
+      "9F472": "Upstream reference — verify application",
+      "9G444": "Downstream reference — verify application"
+    }
+  },
+  {
+    "name": "Engine mount",
+    "bases": [
+      "6028",
+      "6038",
+      "6030",
+      "6F055"
+    ],
+    "aliases": [
+      "motor mount",
+      "engine support",
+      "upper motor mount",
+      "front mount"
+    ],
+    "category": "Engine & cooling"
+  },
+  {
+    "name": "Valve cover",
+    "bases": [
+      "6582"
+    ],
+    "aliases": [
+      "rocker cover",
+      "cam cover",
+      "cylinder head cover"
+    ],
+    "category": "Engine & cooling"
+  },
+  {
+    "name": "Valve cover gasket",
+    "bases": [
+      "6584"
+    ],
+    "aliases": [
+      "rocker cover gasket",
+      "cam cover seal"
+    ],
+    "category": "Engine & cooling"
+  },
+  {
+    "name": "Engine coolant thermostat",
+    "bases": [
+      "8575"
+    ],
+    "aliases": [
+      "thermostat",
+      "coolant regulator"
+    ],
+    "category": "Engine & cooling"
+  },
+  {
+    "name": "Water pump",
+    "bases": [
+      "8501"
+    ],
+    "aliases": [
+      "coolant pump",
+      "engine water pump"
+    ],
+    "category": "Engine & cooling"
+  },
+  {
+    "name": "Engine oil cooler",
+    "bases": [
+      "6A642"
+    ],
+    "aliases": [
+      "engine cooler",
+      "oil heat exchanger"
+    ],
+    "category": "Engine & cooling"
+  },
+  {
+    "name": "AC compressor",
+    "bases": [
+      "19703",
+      "19V703"
+    ],
+    "aliases": [
+      "air conditioning compressor",
+      "aircon compressor"
+    ],
+    "category": "Climate control"
+  },
+  {
+    "name": "Alternator",
+    "bases": [
+      "10346"
+    ],
+    "aliases": [
+      "charging generator",
+      "alternator assembly"
+    ],
+    "category": "Electrical"
+  },
+  {
+    "name": "Starter motor",
+    "bases": [
+      "11002"
+    ],
+    "aliases": [
+      "starter",
+      "cranking motor"
+    ],
+    "category": "Electrical"
+  },
+  {
+    "name": "Ignition coil",
+    "bases": [
+      "12029"
+    ],
+    "aliases": [
+      "coil pack",
+      "cop",
+      "coil on plug",
+      "spark coil"
+    ],
+    "category": "Electrical"
+  },
+  {
+    "name": "Mass airflow sensor",
+    "bases": [
+      "12B579"
+    ],
+    "aliases": [
+      "maf",
+      "mass air flow",
+      "air meter"
+    ],
+    "category": "Fuel & emissions"
+  },
+  {
+    "name": "Powertrain control module",
+    "bases": [
+      "12A650"
+    ],
+    "aliases": [
+      "pcm",
+      "ecm",
+      "ecu",
+      "engine computer",
+      "engine brain"
+    ],
+    "category": "Electrical"
+  },
+  {
+    "name": "Accelerator pedal",
+    "bases": [
+      "9F836"
+    ],
+    "aliases": [
+      "gas pedal",
+      "accelerator pedal sensor"
+    ],
+    "category": "Fuel & emissions"
+  },
+  {
+    "name": "Clock spring",
+    "bases": [
+      "14A664"
+    ],
+    "aliases": [
+      "clockspring",
+      "spiral cable",
+      "airbag contact"
+    ],
+    "category": "Electrical"
+  },
+  {
+    "name": "Charge air cooler hose",
+    "bases": [
+      "6C640"
+    ],
+    "aliases": [
+      "cac tube",
+      "boost hose",
+      "intercooler hose",
+      "turbo hose"
+    ],
+    "category": "Engine & cooling"
+  },
+  {
+    "name": "Serpentine belt tensioner",
+    "bases": [
+      "6B209"
+    ],
+    "aliases": [
+      "belt tensioner",
+      "drive belt tensioner"
+    ],
+    "category": "Engine & cooling"
+  },
+  {
+    "name": "Steering rack",
+    "bases": [
+      "3504"
+    ],
+    "aliases": [
+      "rack and pinion",
+      "power steering gear"
+    ],
+    "category": "Steering & suspension"
+  },
+  {
+    "name": "Charcoal canister",
+    "bases": [
+      "9D650",
+      "9D653"
+    ],
+    "aliases": [
+      "evap canister",
+      "fuel vapor canister",
+      "carbon canister"
+    ],
+    "category": "Fuel & emissions"
+  },
+  {
+    "name": "Rear crankshaft oil seal",
+    "bases": [
+      "6701"
+    ],
+    "aliases": [
+      "rear main seal",
+      "rms"
+    ],
+    "category": "Engine & cooling"
+  },
+  {
+    "name": "Wiring pigtail",
+    "bases": [
+      "14S411"
+    ],
+    "aliases": [
+      "repair plug",
+      "wire connector",
+      "harness repair connector"
+    ],
+    "category": "Electrical"
+  },
+  {
+    "name": "Wheel hub assembly",
+    "bases": [
+      "1104",
+      "1109"
+    ],
+    "aliases": [
+      "wheel bearing",
+      "hub bearing",
+      "front wheel bearing",
+      "rear wheel bearing",
+      "front hub",
+      "rear hub",
+      "wheel hub and bearing assembly",
+      "Front wheel hub and bearing assembly"
+    ],
+    "category": "Wheels & tires",
+    "note": "Hub position and service form vary by application. Base 1104 is not exclusively a front hub. Use the VIN and catalog position before selecting a full service number.",
+    "labels": {}
+  },
+  {
+    "name": "Coolant expansion reservoir",
+    "bases": [
+      "8A080"
+    ],
+    "aliases": [
+      "degas bottle",
+      "degas tank",
+      "coolant bottle",
+      "overflow tank",
+      "coolant reservoir",
+      "expansion tank"
+    ],
+    "category": "Engine & cooling",
+    "note": "",
+    "labels": {}
+  },
+  {
+    "name": "Camshaft timing solenoid",
+    "bases": [
+      "6L713"
+    ],
+    "aliases": [
+      "vvt solenoid",
+      "vct solenoid",
+      "variable valve timing solenoid",
+      "cam timing solenoid"
+    ],
+    "category": "Engine & cooling",
+    "note": "",
+    "labels": {}
+  },
+  {
+    "name": "Manifold absolute pressure sensor",
+    "bases": [
+      "9F479"
+    ],
+    "aliases": [
+      "map sensor",
+      "intake pressure sensor",
+      "manifold pressure sensor"
+    ],
+    "category": "Fuel & emissions",
+    "note": "",
+    "labels": {}
+  },
+  {
+    "name": "Charge air cooler hose",
+    "bases": [
+      "6C640"
+    ],
+    "aliases": [
+      "cac tube",
+      "boost hose",
+      "intercooler hose",
+      "turbo hose",
+      "intercooler pipe",
+      "charge air pipe"
+    ],
+    "category": "Engine & cooling",
+    "note": "",
+    "labels": {}
+  },
+  {
+    "name": "Reductant injector",
+    "bases": [
+      "5J281"
+    ],
+    "aliases": [
+      "def injector",
+      "urea injector",
+      "diesel exhaust fluid injector",
+      "reductant dosing injector"
+    ],
+    "category": "Exhaust & chassis",
+    "note": "",
+    "labels": {}
+  },
+  {
+    "name": "Transmission range sensor",
+    "bases": [
+      "7A247",
+      "7F293"
+    ],
+    "aliases": [
+      "neutral safety switch",
+      "range sensor",
+      "transmission position sensor",
+      "park neutral switch"
+    ],
+    "category": "Transmission & driveline",
+    "note": "",
+    "labels": {}
+  },
+  {
+    "name": "Driveshaft center support bearing",
+    "bases": [
+      "4800"
+    ],
+    "aliases": [
+      "carrier bearing",
+      "center bearing",
+      "centre support bearing",
+      "prop shaft bearing"
+    ],
+    "category": "Transmission & driveline",
+    "note": "",
+    "labels": {}
+  },
+  {
+    "name": "Driveshaft universal joint",
+    "bases": [
+      "4635"
+    ],
+    "aliases": [
+      "u joint",
+      "ujoint",
+      "u-joint",
+      "universal joint",
+      "driveshaft joint"
+    ],
+    "category": "Transmission & driveline",
+    "note": "",
+    "labels": {}
+  },
+  {
+    "name": "Steering universal joint",
+    "bases": [
+      "3249"
+    ],
+    "aliases": [
+      "steering u joint",
+      "steering shaft joint"
+    ],
+    "category": "Steering & suspension",
+    "note": "",
+    "labels": {}
+  },
+  {
+    "name": "Stabilizer bar link",
+    "bases": [
+      "5495",
+      "5K483"
+    ],
+    "aliases": [
+      "sway bar link",
+      "anti roll bar link",
+      "stabilizer link",
+      "front sway link",
+      "front stabilizer link"
+    ],
+    "category": "Steering & suspension",
+    "note": "",
+    "labels": {}
+  },
+  {
+    "name": "Steering tie rod",
+    "bases": [
+      "3280",
+      "3A130"
+    ],
+    "aliases": [
+      "tie rod end",
+      "inner tie rod",
+      "outer tie rod",
+      "steering tie rod end"
+    ],
+    "category": "Steering & suspension",
+    "note": "",
+    "labels": {
+      "3280": "Inner tie rod reference",
+      "3A130": "Outer tie rod reference"
+    }
+  },
+  {
+    "name": "Power window switch",
+    "bases": [
+      "14529"
+    ],
+    "aliases": [
+      "driver window switch",
+      "master window switch",
+      "window control switch",
+      "electric window switch"
+    ],
+    "category": "Electrical",
+    "note": "Door position and switch functions vary by vehicle; confirm the application.",
+    "labels": {}
+  },
+  {
+    "name": "Tail lamp",
+    "bases": [
+      "13405"
+    ],
+    "aliases": [
+      "tail light",
+      "taillight",
+      "tail lamp assembly",
+      "rear light",
+      "rear combination lamp"
+    ],
+    "category": "Electrical",
+    "note": "",
+    "labels": {}
+  },
+  {
+    "name": "Parking camera",
+    "bases": [
+      "19G490",
+      "19H406"
+    ],
+    "aliases": [
+      "backup camera",
+      "back up camera",
+      "rear view camera",
+      "reverse camera",
+      "parking camera",
+      "rearview camera"
+    ],
+    "category": "Electrical",
+    "note": "Camera position and equipment vary by application.",
+    "labels": {}
+  },
+  {
+    "name": "Spark plug",
+    "bases": [
+      "12405",
+      "22F1",
+      "24FP",
+      "42C6"
+    ],
+    "aliases": [
+      "spark plugs",
+      "ignition plug"
+    ],
+    "category": "Electrical",
+    "note": "Conventional service and legacy reference formats are retained. Select the complete number by application.",
+    "labels": {}
+  },
+  {
+    "name": "Transmission range / detent sensor",
+    "bases": [
+      "7H557"
+    ],
+    "aliases": [
+      "tr sensor",
+      "digital transmission range sensor",
+      "transmission range sensor",
+      "transmission detent sensor"
+    ],
+    "category": "Transmission & driveline",
+    "note": "TR/range and detent names are documented in different applications. Verify the exact transmission, service assembly and VIN in EPC."
+  },
+  {
+    "name": "Brake caliper support / anchor bracket",
+    "bases": [
+      "2B292"
+    ],
+    "aliases": [
+      "caliper bracket",
+      "caliper support",
+      "caliper anchor plate",
+      "brake anchor plate"
+    ],
+    "category": "Brakes",
+    "note": "Ford TSB 13-4-25 identifies BV6Z-2B292-A as the caliper anchor support for its stated application. Other prefixes, suffixes and positions need EPC verification."
+  },
+  {
+    "name": "Trunk lid torsion bar",
+    "bases": [
+      "5444890",
+      "5444891"
+    ],
+    "aliases": [
+      "luggage compartment lid torsion bar",
+      "deck lid torsion bar",
+      "trunk torsion spring"
+    ],
+    "category": "Body & interior",
+    "note": "Two service families grouped by component, not interchangeability. The cited Fusion bulletin distinguishes upper and lower bars; confirm position and application in EPC."
+  },
+  {
+    "name": "Door opening weatherstrip",
+    "bases": [
+      "1020708"
+    ],
+    "aliases": [
+      "door seal",
+      "weatherstrip on body",
+      "door opening seal",
+      "body mounted door weatherstrip"
+    ],
+    "category": "Body & interior",
+    "note": "Component name supported by the published 8L5Z-1020708-A example. A matching base alone does not establish vehicle fitment."
+  },
+  {
+    "name": "Door window belt weatherstrip",
+    "bases": [
+      "1021452",
+      "1021453",
+      "1021456",
+      "1021457"
+    ],
+    "aliases": [
+      "window belt seal",
+      "belt weather strip",
+      "door window weatherstrip",
+      "window sweep"
+    ],
+    "category": "Body & interior",
+    "note": "Published service examples identify window-belt weatherstrips. Inner/outer and left/right variants are not interchangeable; verify the full part number and application in EPC."
+  }
+]

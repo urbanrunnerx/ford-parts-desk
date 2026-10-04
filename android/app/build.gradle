@@ -1,0 +1,26 @@
+plugins { id 'com.android.application' }
+// This replacement has its own app identity; installing it does not replace another app.
+android {
+ namespace 'dev.urbanrunnerx.partsdesk'
+ compileSdk 35
+ defaultConfig {
+  applicationId 'dev.urbanrunnerx.partsdesk'
+  manifestPlaceholders = [appLabel: 'Ford Parts Desk', appIcon: '@drawable/ic_launcher']
+  minSdk 26
+  targetSdk 35
+  versionCode 30000
+  versionName '3.0.0'
+  testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+ }
+ buildTypes { release { minifyEnabled false } }
+ compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+ sourceSets { main { assets.srcDirs = ['../../dist'] } }
+ lint { abortOnError true }
+}
+dependencies {
+ implementation 'androidx.webkit:webkit:1.12.1'
+ androidTestImplementation 'androidx.test:runner:1.6.2'
+ androidTestImplementation 'androidx.test:core:1.6.1'
+ androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+}
+

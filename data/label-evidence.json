@@ -1,0 +1,116 @@
+{
+  "sources": [
+    {
+      "id": "ford-tsb-13-5-27",
+      "name": "Ford TSB 13-5-27: transmission range sensor",
+      "url": "https://www.fordservicecontent.com/Ford_Content/pubs/content/~WT/~MUS~LEN/3631/tsb13-05-27.htm",
+      "checkedAt": "2026-10-04",
+      "publishedAt": "2013-05-27",
+      "scope": "Historical Ford bulletin. Component-name evidence from its parts table, not current VIN fitment or supersession data."
+    },
+    {
+      "id": "ford-tsb-13-4-25",
+      "name": "Ford TSB 13-4-25: caliper anchor support",
+      "url": "https://www.fordservicecontent.com/Ford_Content/pubs/content/~WT/~MUS~LEN/3601/tsb13-04-25.htm",
+      "checkedAt": "2026-10-04",
+      "publishedAt": "2013-04-29",
+      "scope": "Historical Ford bulletin. The example concerns its specified Escape application; no universal fitment assertion."
+    },
+    {
+      "id": "ford-tsb-13-5-18",
+      "name": "Ford TSB 13-5-18: luggage compartment lid torsion bars",
+      "url": "https://www.fordservicecontent.com/Ford_Content/pubs/content/~WT/~MUS~LEN/3632/tsb13-05-18.htm",
+      "checkedAt": "2026-10-04",
+      "publishedAt": "2013-05-16",
+      "scope": "Historical Ford bulletin. Names apply to the cited service examples; upper/lower assignments are not generalized."
+    },
+    {
+      "id": "dealer-door-opening",
+      "name": "OEM Ford Parts Direct: published door-opening weatherstrip example",
+      "url": "https://www.oemfordpartsdirect.com/oem-parts/ford-weather-strip-on-body-8l5z1020708a",
+      "checkedAt": "2026-10-04",
+      "scope": "Public retailer product listing for 8L5Z-1020708-A. Component-name evidence only; prices and fitment claims are not imported."
+    },
+    {
+      "id": "dealer-window-belt",
+      "name": "Tasca Parts: published window-belt weatherstrip examples",
+      "url": "https://www.tascaparts.com/v-2002-ford-ranger--ev--electric/body--exterior-trim-front-door",
+      "checkedAt": "2026-10-04",
+      "scope": "Public dealer parts listing. Component names linked to exact service examples, not an exhaustive or current fitment catalog."
+    }
+  ],
+  "entries": [
+    {
+      "base": "7H557",
+      "source": "ford-tsb-13-5-27",
+      "description": "Transmission range sensor (TR sensor)",
+      "examples": [
+        "9E9Z7H557B"
+      ]
+    },
+    {
+      "base": "2B292",
+      "source": "ford-tsb-13-4-25",
+      "description": "Front disc brake caliper anchor support",
+      "examples": [
+        "BV6Z2B292A"
+      ]
+    },
+    {
+      "base": "5444890",
+      "source": "ford-tsb-13-5-18",
+      "description": "Luggage compartment lid torsion bar; lower in the cited example",
+      "examples": [
+        "DS7Z5444890B"
+      ]
+    },
+    {
+      "base": "5444891",
+      "source": "ford-tsb-13-5-18",
+      "description": "Luggage compartment lid torsion bar; upper in the cited example",
+      "examples": [
+        "DS7Z5444891B"
+      ]
+    },
+    {
+      "base": "1020708",
+      "source": "dealer-door-opening",
+      "description": "Door opening weatherstrip / body-mounted door seal",
+      "examples": [
+        "8L5Z1020708A"
+      ]
+    },
+    {
+      "base": "1021452",
+      "source": "dealer-window-belt",
+      "description": "Door window belt weatherstrip",
+      "examples": [
+        "6L5Z1021452AA"
+      ]
+    },
+    {
+      "base": "1021453",
+      "source": "dealer-window-belt",
+      "description": "Door window belt weatherstrip",
+      "examples": [
+        "6L5Z1021453AA"
+      ]
+    },
+    {
+      "base": "1021456",
+      "source": "dealer-window-belt",
+      "description": "Door window belt weatherstrip",
+      "examples": [
+        "8L5Z1021456A"
+      ]
+    },
+    {
+      "base": "1021457",
+      "source": "dealer-window-belt",
+      "description": "Door window belt weatherstrip",
+      "examples": [
+        "8L5Z1021457A"
+      ]
+    }
+  ]
+}
